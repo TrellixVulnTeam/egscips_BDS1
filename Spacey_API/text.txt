@@ -1,1 +1,1 @@
-from_redis: /home/kaiwen98/spacey/Spacey_API
+from_redis: C:\Users\Looi Kai Wen\Desktop\egscips\Spacey_API
