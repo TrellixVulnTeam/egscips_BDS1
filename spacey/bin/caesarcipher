@@ -1,0 +1,5 @@
+#!/home/kaiwen98/spacey/spacey/bin/python3
+from caesarcipher.cmdline import main
+
+if __name__ == '__main__':
+    main()
