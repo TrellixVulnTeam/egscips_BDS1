@@ -68,24 +68,30 @@ def set_up_config_menu_labelframe(parent_frame):
     return config_menu_labelframe
 
 def set_up_left_menu_labelframe(parent_frame):
+    
+    TKINTER_WIDGET_LEFT_MENU_TEXT_TITLE = "Menu 1"
     left_menu_labelframe = tk.LabelFrame(
         parent_frame,
-        text="Menu 1",
-        width=TKINTER_WIDGET_CONFIG_PANEL_WIDTH / 2.2,
-        height=TKINTER_WIDGET_CONFIG_PANEL_HEIGHT,
-        bg="gray40",
+        text = TKINTER_WIDGET_LEFT_MENU_TEXT_TITLE,
+        width = TKINTER_WIDGET_LEFT_MENU_WIDTH,
+        height = TKINTER_WIDGET_LEFT_MENU_HEIGHT,
+        bg = TKINTER_WIDGET_LEFT_MENU_COLOUR_BACKGROUND,
     )
-    left_menu_labelframe.pack(side=tk.LEFT, expand=1, fill=tk.X)
+    left_menu_labelframe.pack(
+        side = tk.LEFT, 
+        expand = 1, 
+        fill = tk.X)
     left_menu_labelframe.pack_propagate(False)
     return left_menu_labelframe
 
 def set_up_right_menu_labelframe(parent_frame):
+
     right_menu_labelframe = tk.LabelFrame(
         parent_frame,
-        text="Menu 2",
-        width=TKINTER_WIDGET_CONFIG_PANEL_WIDTH / 2.2,
-        height=TKINTER_WIDGET_CONFIG_PANEL_HEIGHT,
-        bg="gray40",
+        text = TKINTER_WIDGET_RIGHT_MENU_TEXT_TITLE,
+        width = TKINTER_WIDGET_RIGHT_MENU_WIDTH,
+        height = TKINTER_WIDGET_RIGHT_MENU_HEIGHT,
+        bg = TKINTER_WIDGET_RIGHT_MENU_COLOUR_BACKGROUND,
     )
     right_menu_labelframe.pack(side=tk.LEFT, expand=1)
     right_menu_labelframe.pack_propagate(False)

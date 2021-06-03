@@ -89,11 +89,13 @@ def setup():
     """
     Set Tk configuration
     """
-    global canvas_w, canvas_h, image_file
-
     config.root = set_up_tkinter_config(config.root)
 
     map = set_up_map_panel(config.root)
+    # Align right with padding
+    map.pack(padx=20, pady=20, side=tk.RIGHT)  
+    # Fix frame size to dimensions
+    map.pack_propagate(False)  
     ## Configure global variables.
 
     # Set canvas within map to draw.
@@ -129,19 +131,12 @@ def setup():
 
     config_menu_frame.pack()
 
-    #config_menu_labelframe.create_window((0, 0), window=config_menu_frame, anchor="nw")
-    # config_menu_frame.bind(
-    #     "<Configure>", lambda event, canvas=config_menu_labelframe: onFrameConfigure(canvas)
-    # )
-
     left_menu_labelframe = set_up_left_menu_labelframe(config_menu_frame)
     set_up_widgets_in_left_menu_labelframe(left_menu_labelframe, cursor)
 
     right_menu_labelframe = set_up_right_menu_labelframe(config_menu_frame)
     set_up_widgets_in_right_menu_labelframe(right_menu_labelframe)
 
-    map.pack(padx=20, pady=20, side=tk.RIGHT)  # Align right with padding
-    map.pack_propagate(False)  # Fix frame size to dimensions
     config.map_canvas.canvas.pack(padx=10, pady=10)  # Set padding
 
     # When the user press escape, the window will exit.

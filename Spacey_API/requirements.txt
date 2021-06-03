@@ -1,0 +1,11 @@
+appdirs==1.4.4
+black==21.5b2
+click==8.0.1
+colorama==0.4.4
+mypy-extensions==0.4.3
+pathspec==0.8.1
+Pillow==8.2.0
+redis==3.5.3
+regex==2021.4.4
+tk==0.1.0
+toml==0.10.2

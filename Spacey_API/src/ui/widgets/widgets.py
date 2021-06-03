@@ -17,7 +17,7 @@ from ...node.node_controller import *
 from functools import partial
 from queue import Queue
 from tkinter import font
-from ...image.imgpro import *
+from ...image import imgpro
 from platform import system as platf
 from ...image.imagegen import *
 from ...storage import redisDB

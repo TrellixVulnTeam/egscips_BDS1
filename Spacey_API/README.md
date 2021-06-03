@@ -12,3 +12,10 @@
 
 ### Introduction
    The image processor imports the relevant JSON file from the node manager to initialize the map in the respectory file directory. Thereafter, any updates in status of the seats will result in changes in the color of the respective seat and a corresponding update in the map.
+
+### FOR EGSC DEVELOPERS
+   - Note that you must set your workspace to Spacey_API, so that all the relative imports will work.
+   - Ensure to install requirements from requirements.txt.
+   - Run the program from main.py. The window should pop up.
+   - The code base is modified heavily from the <a link = "https://github.com/kaiwen98/spacey"> source repository </a>. There are some code from there that are removed for neatness, or if I deem it to be superfluos. If somehow there's some bug, you may want to refer to the code.
+   - As of now, DB operations are not working because the free trial I have signed up with Redis probably has expired. I think we will need to replace the storage functions with Firebase.
