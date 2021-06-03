@@ -1,11 +1,11 @@
 from tkinter import *
-from . import classdef as spc
+from .ui.widgets.widgets import *
 from tkinter import filedialog
-from . import config as tkinter_window_cfg
-from . import sensor_data
-from . import imgpro
+from . import config as config
+from .node.node_controller import *
+from .image.imgpro import *
 import sys
-from .Redis import redisDB
+from .storage import redisDB
 import os
 from os.path import dirname as dir, splitext, basename, join, abspath
 import sys
@@ -74,14 +74,14 @@ x_list = []  # list of all possible coordinates
 y_list = []
 img = None  # image file
 num_coordinates_max = 0  # max num of coordinates
-restaurant_space = None  # glb restaurant space
+node_controller = None  # glb restaurant space
 node = None  # node pointer
 x, y = 0, 0  # mid coords of the latest node placed
 x_bb1, y_bb1 = 0, 0  # Bounding box coordinates of active canva region (blue)
 x_bb2, y_bb2 = 0, 0
 deposit_flag = True  # If a node can be deposit on the spot
 updateTextDone = False  # Signal update of err msg
-myCanvas = None  # glb myCanvasObj
+map_canvas = None  # glb map_canvasObj
 node_idx = None
 prev_node_idx = None
 step = 5  # dist between each grid line
@@ -102,14 +102,14 @@ prepimgpath = None  # path of image
 postimgpath = None
 pady = 5  # padding for widget format
 padx = 5
-grid = None
+map_grid = None
 filename = ""
 img_padding = 0
 image_flag = False
 load_flag = False
 img_x_bb1 = -1  # img bb box corner
 img_y_bb1 = -1
-tkinter_window_cfg.db_options = ["No Database Selected"]
+config.db_options = ["No Database Selected"]
 userid = ""
 session_name = ""
 no_floor_plan = False
@@ -163,10 +163,10 @@ def getbasename(path):
 # Return filename of the new output graphic
 def get_output_graphic_path():
     if local_disk:
-        name = tkinter_window_cfg.session_name
+        name = config.session_name
     else:
         name = (
-            tkinter_window_cfg.userid + "_" + tkinter_window_cfg.session_name
+            config.userid + "_" + config.session_name
         ).lstrip("_")
 
     result = os.path.join(image_output_graphic_folder, "output_" + name + ".png")
@@ -177,13 +177,13 @@ def get_output_floor_plan_path():
     if no_floor_plan:
         return None
     if local_disk:
-        name = tkinter_window_cfg.session_name
+        name = config.session_name
     else:
         name = (
-            tkinter_window_cfg.userid + "_" + tkinter_window_cfg.session_name
+            config.userid + "_" + config.session_name
         ).lstrip("_")
     result = os.path.join(floorplan_folder_output, "processed_img_" + name + ".png")
-    tkinter_window_cfg.postimgpath = name
+    config.postimgpath = name
     return result
 
 
@@ -223,53 +223,53 @@ def compile(root, local_disk=True):
     for i in config_op:
         configinfo[i] = globals()[i]
 
-    for i in restaurant_space.devinfo:
-        devinfo[i] = getattr(restaurant_space, i)
+    for i in node_controller.devinfo:
+        devinfo[i] = getattr(node_controller, i)
 
     # Populate the dictionary with the serialized information
     json_zipinfo["configinfo"] = json.dumps(configinfo)
     json_zipinfo["devinfo"] = json.dumps(devinfo)
-    json_occupancy = tkinter_window_cfg.restaurant_space.occupancy
-    json_hash = tkinter_window_cfg.restaurant_space.tuple_idx
-    json_coord = tkinter_window_cfg.output_graphic_coord
+    json_occupancy = config.node_controller.occupancy
+    json_hash = config.node_controller.tuple_idx
+    json_coord = config.output_graphic_coord
     if image_flag == True:
 
         json_zipinfo["processed_floorplan"] = json_serialize_image(
-            tkinter_window_cfg.get_output_floor_plan_path()
+            config.get_output_floor_plan_path()
         )
     json_coord["processed_img"] = json_serialize_image(
-        tkinter_window_cfg.get_output_graphic_path()
+        config.get_output_graphic_path()
     )
     # List of dictionaries containing serialised information. We will now write it into a json file to store in database/ local disk
     json_dict_list = [json_zipinfo, json_occupancy, json_hash, json_coord]
-    name = tkinter_window_cfg.userid + "_" + tkinter_window_cfg.session_name
+    name = config.userid + "_" + config.session_name
 
     if local_disk:
         name = session_name
         for i in range(len(json_dict_list)):
 
             path = os.path.join(
-                configJsonDir(tkinter_window_cfg._root)[i], name + ".json"
+                configJsonDir(config._root)[i], name + ".json"
             )
             with open(path, "w") as outfile:
                 json.dump(json_dict_list[i], outfile)
     else:
         for i in res_info_op:
             resinfo[i] = globals()[i]
-        tkinter_window_cfg.database.exportToDB(name, import_from_script=json_dict_list)
-        tkinter_window_cfg.database.setResInfo(name, resinfo)
+        config.database.exportToDB(name, import_from_script=json_dict_list)
+        config.database.setResInfo(name, resinfo)
 
     data = {}
     # Confirms the json file's existence and prints contents on console.
     if local_disk:
 
-        path = os.path.join(configJsonDir(tkinter_window_cfg._root)[0], name + ".json")
+        path = os.path.join(configJsonDir(config._root)[0], name + ".json")
         with open(path, "r") as infile:
             data = json.loads(infile.read())
         return str(json.dumps(data["configinfo"], indent=1))
     else:
 
-        data = tkinter_window_cfg.database.importFromDB(name, export_to_script=[data])
+        data = config.database.importFromDB(name, export_to_script=[data])
         print("-------")
 
     return str(json.dumps(data[0]["configinfo"], indent=1))
@@ -281,27 +281,27 @@ def decompile(root, local_disk=True):
     json_occupancy.clear()
     json_hash.clear()
     json_coord.clear()
-    tkinter_window_cfg.output_graphic_coord.clear()
+    config.output_graphic_coord.clear()
     # List of dictionaries containing serialised information. We will now write it into a json file to store in database/ local disk
     json_dict_list_name = ["json_zipinfo", "json_occupancy", "json_hash", "json_coord"]
     data = []
-    name = tkinter_window_cfg.userid + "_" + tkinter_window_cfg.session_name
+    name = config.userid + "_" + config.session_name
     for i in range(4):
         data.append({})
 
     if local_disk:
-        name = tkinter_window_cfg.session_name
-        for i in range(len(configJsonDir(tkinter_window_cfg._root))):
+        name = config.session_name
+        for i in range(len(configJsonDir(config._root))):
             path = os.path.join(
-                configJsonDir(tkinter_window_cfg._root)[i], name + ".json"
+                configJsonDir(config._root)[i], name + ".json"
             )
             with open(path, "r") as outfile:
                 globals()[json_dict_list_name[i]] = json.load(outfile)
     else:
-        data = tkinter_window_cfg.database.importFromDB(name, export_to_script=data)
+        data = config.database.importFromDB(name, export_to_script=data)
         for i in json_dict_list_name:
             globals()[i] = data[json_dict_list_name.index(i)]
-        resinfo = tkinter_window_cfg.database.getResInfo(name)
+        resinfo = config.database.getResInfo(name)
 
     configinfo = json.loads(json_zipinfo.get("configinfo"))
     devinfo = json.loads(json_zipinfo.get("devinfo"))
@@ -309,18 +309,18 @@ def decompile(root, local_disk=True):
     processed_floorplan = json_zipinfo.get("processed_floorplan")
 
     if not local_disk:
-        tkinter_window_cfg.json_deserialize_image(
-            processed_img, tkinter_window_cfg.get_output_graphic_path()
+        config.json_deserialize_image(
+            processed_img, config.get_output_graphic_path()
         )
-        tkinter_window_cfg.json_deserialize_image(
-            processed_floorplan, tkinter_window_cfg.get_output_floor_plan_path()
+        config.json_deserialize_image(
+            processed_floorplan, config.get_output_floor_plan_path()
         )
         for i in res_info_op:
             globals()[i] = resinfo[i]
     else:
         no_floor_plan = False
     output_graphic_coord = json_coord
-    tkinter_window_cfg.box_len = json_coord["box_len"]
+    config.box_len = json_coord["box_len"]
     json_coord.pop("box_len")
     devinfo["tuple_idx"] = json_hash
     devinfo["occupancy"] = json_occupancy
@@ -328,11 +328,11 @@ def decompile(root, local_disk=True):
     for i in config_op:
         globals()[i] = configinfo[i]
 
-    for i in restaurant_space.devinfo:
-        setattr(restaurant_space, i, devinfo[i])
+    for i in node_controller.devinfo:
+        setattr(node_controller, i, devinfo[i])
 
     unpackFromJson()
-    restaurant_space.unpackFromJson()
+    node_controller.unpackFromJson()
 
     return json.dumps(json_zipinfo["configinfo"], indent=1)
 
@@ -340,11 +340,11 @@ def decompile(root, local_disk=True):
 def unpackFromJson():
     global img
 
-    if tkinter_window_cfg.image_flag is True:
+    if config.image_flag is True:
         img = imgpro.floorPlan(
-            tkinter_window_cfg.get_output_floor_plan_path(),
-            tkinter_window_cfg.myCanvas.canvas,
+            config.get_output_floor_plan_path(),
+            config.map_canvas.canvas,
             False,
         )
-    grid.refresh(delete=False, resize=False)
-    tkinter_window_cfg.myCanvas.restoreTagOrder()
+    map_grid.refresh(delete=False, resize=False)
+    config.map_canvas.restoreTagOrder()

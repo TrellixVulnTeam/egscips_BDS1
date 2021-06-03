@@ -4,7 +4,7 @@ import os
 # import redis
 
 from os.path import dirname as dir
-from src import admin_map_creator as mc
+from src.ui.controller import main
 
 """
 Access point to launch the program.
@@ -23,4 +23,4 @@ Do note of the following points before development:
 
 
 if __name__ == "__main__":
-    mc.main()
+    main()
